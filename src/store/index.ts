@@ -13,6 +13,7 @@ const initialState: InitialState = {
   searchResults: [],
   nextPageToken: null,
   recommendedVideos: [],
+  sidebarOpen: true,
 };
 
 const YoutubeSlice = createSlice({
@@ -28,6 +29,9 @@ const YoutubeSlice = createSlice({
     },
     clearSearchTerm: (state) => {
       state.searchTerm = "";
+    },
+    toggleSidebar: (state) => {
+      state.sidebarOpen = !state.sidebarOpen;
     },
   },
   extraReducers: (builder) => {
@@ -54,7 +58,7 @@ export const store = configureStore({
   },
 });
 
-export const { clearVideos, changeSearchTerm, clearSearchTerm } =
+export const { clearVideos, changeSearchTerm, clearSearchTerm, toggleSidebar } =
   YoutubeSlice.actions;
 
 export type RootState = ReturnType<typeof store.getState>;

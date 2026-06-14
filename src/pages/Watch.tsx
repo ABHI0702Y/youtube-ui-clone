@@ -4,14 +4,20 @@ import Navbar from "../components/Navbar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { getRecommendedVideos } from "../store/reducers/getRecommendedVideos";
 import { getVideoDetails } from "../store/reducers/getVideoDetails";
-import { BiLike, BiDislike } from "react-icons/bi";
+import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import { HiScissors } from "react-icons/hi";
 import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { FaShare } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import WatchCard from "../components/WatchCard";
+
 export default function Watch() {
   const [showMoreStatus, setShowMoreStatus] = useState<boolean>(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const { id } = useParams();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -26,6 +32,10 @@ export default function Watch() {
     if (id) {
       dispatch(getVideoDetails(id));
       setShowMoreStatus(false);
+      setIsLiked(false);
+      setIsDisliked(false);
+      setIsSubscribed(false);
+      setCopied(false);
     } else {
       navigate("/");
     }
@@ -34,6 +44,22 @@ export default function Watch() {
   useEffect(() => {
     if (currentPlaying && id) dispatch(getRecommendedVideos(id));
   }, [currentPlaying, dispatch, id]);
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    if (!isLiked) setIsDisliked(false);
+  };
+
+  const handleDislike = () => {
+    setIsDisliked(!isDisliked);
+    if (!isDisliked) setIsLiked(false);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <>
@@ -65,27 +91,56 @@ export default function Watch() {
                         <span> {currentPlaying.videoAge} ago</span>
                       </div>
                       <div className="flex items-center gap-4 uppercase">
-                        <div className="flex items-center gap-1 cursor-pointer">
-                          <BiLike className="text-xl" />
+                        <div
+                          className={`flex items-center gap-1 cursor-pointer hover:text-blue-400 ${isLiked ? "text-blue-400" : ""}`}
+                          onClick={handleLike}
+                          title="Like"
+                        >
+                          {isLiked ? (
+                            <BiSolidLike className="text-xl" />
+                          ) : (
+                            <BiLike className="text-xl" />
+                          )}
                           <strong>{currentPlaying.videoLikes}</strong>
                         </div>
-                        <div className="flex items-center gap-1 cursor-pointer">
-                          <BiDislike className="text-xl" />
+                        <div
+                          className={`flex items-center gap-1 cursor-pointer hover:text-blue-400 ${isDisliked ? "text-blue-400" : ""}`}
+                          onClick={handleDislike}
+                          title="Dislike"
+                        >
+                          {isDisliked ? (
+                            <BiSolidDislike className="text-xl" />
+                          ) : (
+                            <BiDislike className="text-xl" />
+                          )}
                           <strong>dislike</strong>
                         </div>
-                        <div className="flex items-center gap-1 cursor-pointer">
+                        <div
+                          className="flex items-center gap-1 cursor-pointer hover:text-gray-300"
+                          onClick={handleShare}
+                          title="Share"
+                        >
                           <FaShare className="text-xl" />
-                          <strong>share</strong>
+                          <strong>{copied ? "copied!" : "share"}</strong>
                         </div>
-                        <div className="flex items-center gap-1 cursor-pointer">
+                        <div
+                          className="flex items-center gap-1 cursor-pointer hover:text-gray-300"
+                          title="Clip"
+                        >
                           <HiScissors className="text-xl" />
                           <strong>clip</strong>
                         </div>
-                        <div className="flex items-center gap-1 cursor-pointer">
+                        <div
+                          className="flex items-center gap-1 cursor-pointer hover:text-gray-300"
+                          title="Save to playlist"
+                        >
                           <MdOutlinePlaylistAdd className="text-xl" />
                           <strong>save</strong>
                         </div>
-                        <div className="flex items-center gap-1 cursor-pointer">
+                        <div
+                          className="flex items-center gap-1 cursor-pointer hover:text-gray-300"
+                          title="More actions"
+                        >
                           <BsThreeDots className="text-xl" />
                         </div>
                       </div>
@@ -108,8 +163,15 @@ export default function Watch() {
                           </h6>
                         </div>
                         <div>
-                          <button className="uppercase bg-red-600 rounded-sm p-2 text-sm tracking-wider">
-                            subscribe
+                          <button
+                            className={`uppercase rounded-sm p-2 text-sm tracking-wider transition-colors ${
+                              isSubscribed
+                                ? "bg-zinc-700 text-gray-300"
+                                : "bg-red-600 text-white"
+                            }`}
+                            onClick={() => setIsSubscribed(!isSubscribed)}
+                          >
+                            {isSubscribed ? "✓ subscribed" : "subscribe"}
                           </button>
                         </div>
                       </div>
@@ -119,9 +181,7 @@ export default function Watch() {
                         } text-sm w-11/12`}
                       >
                         <pre
-                          style={{
-                            fontFamily: `"Roboto", sans-serif`,
-                          }}
+                          style={{ fontFamily: `"Roboto", sans-serif` }}
                           className="whitespace-pre-wrap"
                         >
                           {currentPlaying.videoDescription}
@@ -141,9 +201,9 @@ export default function Watch() {
               </div>
               <div className="mr-24 flex flex-col gap-3">
                 {recommendedVideos.length > 0 &&
-                  recommendedVideos.map((item) => {
-                    return <WatchCard data={item} key={item.videoId} />;
-                  })}
+                  recommendedVideos.map((item) => (
+                    <WatchCard data={item} key={item.videoId} />
+                  ))}
               </div>
             </div>
           </div>

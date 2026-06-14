@@ -5,6 +5,7 @@ export interface InitialState {
   searchResults: [];
   nextPageToken: string | null;
   recommendedVideos: RecommendedVideos[];
+  sidebarOpen: boolean;
 }
 
 export interface HomePageVideos {
